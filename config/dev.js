@@ -3,6 +3,6 @@ module.exports = {
     "70265989829-0t7m7ce5crs6scqd3t0t6g7pv83ncaii.apps.googleusercontent.com",
   googleClientSecret: "8mkniDQOqacXtlRD3gA4n2az",
   mongoURI:
-    "mongodb+srv://pawan94:Nu5KEj1lwj2ifDL8@blogdev.t3tygjw.mongodb.net/advnode?retryWrites=true&w=majority",
+    "mongodb+srv://bloguser:Samsung$1234@blogdev.t3tygjw.mongodb.net/advnode?retryWrites=true&w=majority",
   cookieKey: "123123123",
 };
