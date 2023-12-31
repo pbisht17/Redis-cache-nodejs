@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 class Header extends Component {
   renderContent() {
+    console.log(this.props)
     switch (this.props.auth) {
       case null:
         return;
@@ -16,7 +17,7 @@ class Header extends Component {
       default:
         return [
           <li key="3" style={{ margin: '0 10px' }}>
-            <Link to="/blogssss">My Blogs</Link>
+            <Link to="/blogs">My Blogs</Link>
           </li>,
           <li key="2">
             <a href={'/auth/logout'}>Logout</a>
