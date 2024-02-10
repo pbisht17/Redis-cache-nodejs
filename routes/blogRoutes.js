@@ -14,11 +14,10 @@ module.exports = app => {
 
   app.get('/api/blogs', requireLogin, async (req, res) => {
 
-    
     //changing this to get data from the redis cache
     //Do we have any cached data if yes then immed return it 
     //otherwise we need to respond to our request and update our cache to store the data.
-    const blogs = await Blog.find({ _user: req.user._id });
+    const blogs = await Blog.find({ _user: req.user._id }).cache();
     return res.send(blogs);
   });
 

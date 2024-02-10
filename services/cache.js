@@ -22,17 +22,30 @@ const exec = mongoose.Query.prototype.exec;
     For example, if your query includes options like Model.find({}).select('name').limit(10).skip(5), getOptions() would return { select: 'name', limit: 10, skip: 5 }.
  
     */
+/**
+ * mongoose.Query.prototype is using prototypal inheritance. So we can add any numerous amount of function/method into it.
+ * @returns 
+ */ 
 
+mongoose.Query.prototype.cache = function() {
+    this.usedCache = true;
+    return this;
+}
 mongoose.Query.prototype.exec = async function(){
     console.log('Inside of the mongoose query');
     console.log(this.getQuery());   // Log the query conditions
     console.log(this.mongooseCollection.name); //returns the name of collection
     console.log(this.getOptions());  // Log the query options
+    if(!this.usedCache) {
+        const result = await exec.apply(this, arguments);
+        return result;
+    }
     const key = JSON.stringify(Object.assign({}, this.getQuery(), {
         collection: this.mongooseCollection.name
     }))
     console.log(key)
-    const cacheValue = await client.get(key);
+    const cacheValue = await client.get(key); //Getting Cache value using key
+
     if(cacheValue) {
         console.log('Getting Cache value');
         console.log(cacheValue);
@@ -44,12 +57,12 @@ mongoose.Query.prototype.exec = async function(){
          */
         return Array.isArray(doc) ? 
          doc.map(d => new this.model(d)) : 
-         new this.model(doc)
-        
+         new this.model(doc)   
     }
     const result = await exec.apply(this, arguments);
-    client.set(key, JSON.stringify(result));
+    client.set(key, JSON.stringify(result), 'EX', 10); //EX for expiration of cache value and 10 for 10 sec
     console.log('Getting Result');
     console.log(result);
     return result;
+    
 }
