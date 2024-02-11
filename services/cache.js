@@ -3,7 +3,7 @@ const redis = require('redis');
 const util = require('util');
 const redisUrl = 'redis://127.0.0.1:6379';
 const client = redis.createClient(redisUrl);
-client.get = util.promisify(client.get); // return a new function that can promisified so that we dont have to use callback inside of client.get('key', callback)
+client.hget = util.promisify(client.hget); // return a new function that can promisified so that we dont have to use callback inside of client.get('key', callback)
 const exec = mongoose.Query.prototype.exec;
 
 /**
@@ -27,8 +27,9 @@ const exec = mongoose.Query.prototype.exec;
  * @returns 
  */ 
 
-mongoose.Query.prototype.cache = function() {
+mongoose.Query.prototype.cache = function(options={}) {
     this.usedCache = true;
+    this.hashKey = JSON.stringify(options.key || '');
     return this;
 }
 mongoose.Query.prototype.exec = async function(){
@@ -44,7 +45,7 @@ mongoose.Query.prototype.exec = async function(){
         collection: this.mongooseCollection.name
     }))
     console.log(key)
-    const cacheValue = await client.get(key); //Getting Cache value using key
+    const cacheValue = await client.hget( this.hashKey, key); //Getting Cache value using key
 
     if(cacheValue) {
         console.log('Getting Cache value');
@@ -60,9 +61,14 @@ mongoose.Query.prototype.exec = async function(){
          new this.model(doc)   
     }
     const result = await exec.apply(this, arguments);
-    client.set(key, JSON.stringify(result), 'EX', 10); //EX for expiration of cache value and 10 for 10 sec
-    console.log('Getting Result');
+    client.hset(this.hashKey, key, JSON.stringify(result), 'EX', 10); //EX for expiration of cache value and 10 for 10 sec
     console.log(result);
     return result;
     
 }
+
+module.exports = {
+    clearHash(hashKey) {
+        client.del(JSON.stringify(hashKey))
+    }
+};
